@@ -1,7 +1,9 @@
-abstract class CounterEvent{}
+sealed class CounterEvent{
+  const CounterEvent();
+}
 
-class IncrementCounter extends CounterEvent{}
+final class IncrementCounter extends CounterEvent{}
 
-class DecrementCounter extends CounterEvent{}
+final class DecrementCounter extends CounterEvent{}
 
-class ResetCounter extends CounterEvent{}
+final class ResetCounter extends CounterEvent{}

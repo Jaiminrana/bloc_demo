@@ -18,11 +18,30 @@ class CounterScreen extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.read<CounterBloc>().add(IncrementCounter());
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: Row (
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              context.read<CounterBloc>().add(DecrementCounter());
+            },
+            child: const Icon(Icons.delete),
+          ),
+
+          FloatingActionButton(
+            onPressed: () {
+              context.read<CounterBloc>().add(ResetCounter());
+            },
+            child: const Icon(Icons.reset_tv),
+          ),
+
+          FloatingActionButton(
+            onPressed: () {
+              context.read<CounterBloc>().add(IncrementCounter());
+            },
+            child: const Icon(Icons.add),
+          ),
+        ],
       ),
     );
   }
