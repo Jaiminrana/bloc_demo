@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'feature/counter/presentation/counter_screen.dart';
+import 'feature/counter/view/counter_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
