@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-class DioProvider {
-  DioProvider._();
+class DioFactory {
+  DioFactory._();
 
   static Dio create() {
     final duration30Sec = Duration(seconds: 30);
