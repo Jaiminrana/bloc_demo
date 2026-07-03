@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:self/feature/auth/bloc/auth_bloc.dart';
 import 'package:self/feature/auth/bloc/auth_event.dart';
 import 'package:self/feature/auth/bloc/auth_state.dart';
+import 'package:self/feature/counter/presentation/counter_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -45,7 +46,7 @@ class _AuthScreenState extends State<AuthScreen> {
             ).showSnackBar(const SnackBar(content: Text('Login Successful')));
 
             // TODO: Navigate to Home Screen
-            // Navigator.pushReplacement(...);
+            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => CounterScreen(),));
           }
 
           if (state.status == AuthStatusEnum.failure) {
