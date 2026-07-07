@@ -43,7 +43,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await _localDataSource.saveAccessToken(newToken.accessToken);
       await _localDataSource.saveRefreshToken(newToken.refreshToken);
 
-      final user = await _remoteDataSource.getCurrentUser(newToken.accessToken);
+      final user = await _remoteDataSource.getCurrentUser();
       return user;
     } catch (_) {
       _localDataSource.clearToken();
@@ -53,6 +53,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    await _localDataSource.clearToken();
+    await _remoteDataSource.logout();
+    //await _localDataSource.clearToken();
   }
 }

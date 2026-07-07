@@ -14,12 +14,12 @@ import 'core/router/app_router.dart';
 import 'feature/auth/data/datasource/auth_remote_datasource.dart';
 
 void main() {
-  final dio = DioFactory.create();
+  final localDataSource = AuthLocalDataSourceImpl(SecureStorageService());
+  final dio = DioFactory.create(localDataSource);
 
   final apiClient = ApiClient(dio);
 
   final remoteDataSource = AuthRemoteDataSourceImpl(apiClient);
-  final localDataSource = AuthLocalDataSourceImpl(SecureStorageService());
 
   final repository = AuthRepositoryImpl(remoteDataSource, localDataSource);
   final authBloc = AuthBloc(repository);

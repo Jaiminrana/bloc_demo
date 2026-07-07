@@ -27,7 +27,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatusEnum.loading, errorMessage: null));
     try {
       final user = await authRepository.login(
-        LoginRequestModel(username: event.username, password: event.password),
+        LoginRequestModel(
+          username: event.username,
+          password: event.password,
+          expiresInMins: 1,
+        ),
       );
 
       emit(
@@ -70,13 +74,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await Future.delayed(Duration(milliseconds: 3000));
     await authRepository.logout();
 
-    emit(
-      state.copyWith(
-        status: AuthStatusEnum.unauthenticated,
-        user: null,
-        errorMessage: null,
-      ),
-    );
+    // emit(
+    //   state.copyWith(
+    //     status: AuthStatusEnum.unauthenticated,
+    //     user: null,
+    //     errorMessage: null,
+    //   ),
+    // );
   }
 
   FutureOr<void> _onCheckAuthStatus(

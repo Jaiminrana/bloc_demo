@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:self/core/network/api_client.dart';
 import 'package:self/feature/auth/data/models/login_request_model.dart';
 import 'package:self/feature/auth/data/models/refresh_response_model.dart';
@@ -11,7 +10,7 @@ abstract interface class AuthRemoteDataSource {
 
   Future<RefreshResponseModel> refreshToken(String refreshToken);
 
-  Future<UserModel> getCurrentUser(String accessToken);
+  Future<UserModel> getCurrentUser();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -30,9 +29,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout() {
-    // TODO: implement logout
-    throw UnimplementedError();
+  Future<void> logout() async {
+    await getCurrentUser();
   }
 
   @override
@@ -46,11 +44,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> getCurrentUser(String accessToken) async {
-    final response = await _apiClient.get(
-      '/user/me',
-      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    );
+  Future<UserModel> getCurrentUser() async {
+    final response = await _apiClient.get('/user/me');
 
     return UserModel.fromJson(response.data);
   }
