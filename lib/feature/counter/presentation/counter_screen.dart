@@ -22,20 +22,23 @@ class CounterScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FloatingActionButton(
+            heroTag: 'decrement_btn',
             onPressed: () {
               context.read<CounterBloc>().add(DecrementCounter());
             },
             child: const Icon(Icons.delete),
           ),
-
+          const SizedBox(width: 10),
           FloatingActionButton(
+            heroTag: 'reset_btn',
             onPressed: () {
               context.read<CounterBloc>().add(ResetCounter());
             },
             child: const Icon(Icons.reset_tv),
           ),
-
+          const SizedBox(width: 10),
           FloatingActionButton(
+            heroTag: 'increment_btn',
             onPressed: () {
               context.read<CounterBloc>().add(IncrementCounter());
             },

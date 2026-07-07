@@ -14,6 +14,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LogoutRequested>(_onLogoutRequest);
     on<CheckAuthStatus>(_onCheckAuthStatus);
     on<RefreshToken>(_onRefreshToken);
+
+    add(const AuthEvent.checkAuthStatus());
   }
 
   final AuthRepository authRepository;
@@ -57,12 +59,38 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   FutureOr<void> _onLogoutRequest(
     LogoutRequested event,
     Emitter<AuthState> emit,
-  ) {}
+  ) async {
+    emit(
+      state.copyWith(
+        status: AuthStatusEnum.loading,
+        user: null,
+        errorMessage: null,
+      ),
+    );
+    await Future.delayed(Duration(milliseconds: 3000));
+    await authRepository.logout();
+
+    emit(
+      state.copyWith(
+        status: AuthStatusEnum.unauthenticated,
+        user: null,
+        errorMessage: null,
+      ),
+    );
+  }
 
   FutureOr<void> _onCheckAuthStatus(
     CheckAuthStatus event,
     Emitter<AuthState> emit,
-  ) {}
+  ) async {
+    final user = await authRepository.checkAuthStatus();
+
+    user != null
+        ? emit(state.copyWith(status: AuthStatusEnum.authenticated))
+        : emit(
+            state.copyWith(status: AuthStatusEnum.unauthenticated, user: null),
+          );
+  }
 
   FutureOr<void> _onRefreshToken(RefreshToken event, Emitter<AuthState> emit) {}
 }
