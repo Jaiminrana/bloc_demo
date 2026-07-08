@@ -7,6 +7,9 @@ class AuthInterceptor extends Interceptor {
   final AuthLocalDataSource _localDataSource;
   final Dio _refreshDio;
 
+  //shared Future for concurrent 401s from multiple APIs.
+  Future<String?>? _tokenRefreshFuture;
+
   AuthInterceptor(this._localDataSource, this._refreshDio);
 
   @override
@@ -42,17 +45,70 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
+    ///Suppose /auth/refresh returns 401.
+    /// Your interceptor will intercept that request too.
+    /// You don't want:
+    /// 401
+    /// ↓
+    /// refresh
+    /// ↓
+    /// 401
+    /// ↓
+    /// refresh
+    /// ↓
+    /// 401
+    /// Infinite loop.
+    if (err.requestOptions.path == '/auth/refresh') {
+      return handler.next(err);
+    }
+
     if (err.response?.statusCode != 401) {
       return handler.next(err);
     }
 
-    final refreshToken = await _localDataSource.getRefreshToken();
+    debugPrint('================>>>401 Occurred!!!');
 
-    if (refreshToken == null || refreshToken.isEmpty) {
+    final accessToken = await _getOrRefreshAccessToken();
+
+    if (accessToken == null) {
+      await _logout();
       return handler.next(err);
     }
 
-    debugPrint('401 Occurred!!! --> Refresh Token Found: $refreshToken');
+    try {
+      final retryResponse = await _retryRequest(
+        err.requestOptions,
+        accessToken,
+      );
+      return handler.resolve(retryResponse);
+    } on DioException catch (e) {
+      return handler.next(e);
+    }
+  }
+
+  Future<String?> _getOrRefreshAccessToken() async {
+    if (_tokenRefreshFuture != null) {
+      debugPrint('[AuthInterceptor] Waiting for ongoing token refresh');
+      return _tokenRefreshFuture;
+    }
+
+    _tokenRefreshFuture = _refreshAccessToken();
+
+    try {
+      return await _tokenRefreshFuture;
+    } finally {
+      _tokenRefreshFuture = null;
+    }
+  }
+
+  Future<String?> _refreshAccessToken() async {
+    debugPrint('================>>>Refreshing access token...');
+    final refreshToken = await _localDataSource.getRefreshToken();
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      debugPrint('================>>>Refresh token not found, Refresh failed');
+      return null;
+    }
 
     try {
       final response = await _refreshDio.post(
@@ -65,18 +121,28 @@ class AuthInterceptor extends Interceptor {
       await _localDataSource.saveAccessToken(refreshResponse.accessToken);
 
       await _localDataSource.saveRefreshToken(refreshResponse.refreshToken);
-
-      final requestOptions = err.requestOptions;
-
-      requestOptions.headers['Authorization'] =
-          'Bearer ${refreshResponse.accessToken}';
-
-      final retryResponse = await _refreshDio.fetch(requestOptions);
-
-      return handler.resolve(retryResponse);
+      debugPrint('================>>>Refresh succeeded');
+      return refreshResponse.accessToken;
     } catch (_) {
-      await _localDataSource.clearToken();
-      return handler.next(err);
+      debugPrint('================>>>Refresh failed');
+      return null;
     }
+  }
+
+  Future<Response<dynamic>> _retryRequest(
+    RequestOptions requestOptions,
+    String accessToken,
+  ) async {
+    debugPrint(
+      '[AuthInterceptor] Retrying ${requestOptions.method} ${requestOptions.path}',
+    );
+
+    requestOptions.headers['Authorization'] = 'Bearer $accessToken';
+
+    return _refreshDio.fetch(requestOptions);
+  }
+
+  Future<void> _logout() async {
+    await _localDataSource.clearToken();
   }
 }
