@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
+import 'package:self/core/errors/app_exception.dart';
 import 'package:self/feature/auth/bloc/auth_event.dart';
 import 'package:self/feature/auth/bloc/auth_state.dart';
 import 'package:self/feature/auth/data/models/login_request_model.dart';
@@ -49,12 +50,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           errorMessage: e.message,
         ),
       );
-    } catch (e) {
+    } on AppException catch (e) {
       emit(
         state.copyWith(
           status: AuthStatusEnum.failure,
           user: null,
-          errorMessage: 'Something went wrong.',
+          errorMessage: '${e.failure}',
+          // errorMessage: 'Something went wrong.',
         ),
       );
     }
@@ -72,7 +74,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ),
     );
     await Future.delayed(Duration(milliseconds: 3000));
-    await authRepository.logout();
+
+    try {
+      await authRepository.logout();
+    } on AppException catch (e) {
+      emit(
+        state.copyWith(
+          status: AuthStatusEnum.failure,
+          user: null,
+          errorMessage: '${e.failure}',
+        ),
+      );
+    }
 
     // emit(
     //   state.copyWith(

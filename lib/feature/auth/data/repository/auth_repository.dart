@@ -1,3 +1,4 @@
+import 'package:self/core/errors/network_executor.dart';
 import 'package:self/feature/auth/data/datasource/auth_local_data_source.dart';
 import 'package:self/feature/auth/data/datasource/auth_remote_datasource.dart';
 import 'package:self/feature/auth/data/models/login_request_model.dart';
@@ -19,7 +20,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<UserModel?> login(LoginRequestModel request) async {
-    final user = await _remoteDataSource.login(request);
+    final user = await NetworkExecutor.execute(
+      () => _remoteDataSource.login(request),
+    );
 
     if (user.accessToken == null || user.refreshToken == null) return null;
 
@@ -53,7 +56,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    await _remoteDataSource.logout();
+    await NetworkExecutor.execute(() => _remoteDataSource.logout());
+
+    //await _remoteDataSource.logout();
     //await _localDataSource.clearToken();
   }
 }

@@ -46,7 +46,9 @@ class _AuthScreenState extends State<AuthScreen> {
             ).showSnackBar(const SnackBar(content: Text('Login Successful')));
 
             // TODO: Navigate to Home Screen
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => CounterScreen(),));
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => CounterScreen()),
+            );
           }
 
           if (state.status == AuthStatusEnum.failure) {
