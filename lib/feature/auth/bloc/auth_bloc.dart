@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:dio/dio.dart';
 import 'package:self/core/errors/app_exception.dart';
+import 'package:self/core/errors/failure_message_mapper.dart';
+import 'package:self/core/errors/failures.dart';
 import 'package:self/feature/auth/bloc/auth_event.dart';
 import 'package:self/feature/auth/bloc/auth_state.dart';
 import 'package:self/feature/auth/data/models/login_request_model.dart';
@@ -77,36 +79,44 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       await authRepository.logout();
+      emit(
+        state.copyWith(
+          status: AuthStatusEnum.unauthenticated,
+          user: null,
+          errorMessage: null,
+        ),
+      );
     } on AppException catch (e) {
       emit(
         state.copyWith(
-          status: AuthStatusEnum.failure,
           user: null,
-          errorMessage: '${e.failure}',
+          errorMessage: FailureMessageMapper.map(e.failure),
         ),
       );
     }
-
-    // emit(
-    //   state.copyWith(
-    //     status: AuthStatusEnum.unauthenticated,
-    //     user: null,
-    //     errorMessage: null,
-    //   ),
-    // );
   }
 
-  FutureOr<void> _onCheckAuthStatus(
+  Future<void> _onCheckAuthStatus(
     CheckAuthStatus event,
     Emitter<AuthState> emit,
   ) async {
-    final user = await authRepository.checkAuthStatus();
+    try {
+      final sessionExist = await authRepository.hasSession();
 
-    user != null
-        ? emit(state.copyWith(status: AuthStatusEnum.authenticated))
-        : emit(
-            state.copyWith(status: AuthStatusEnum.unauthenticated, user: null),
-          );
+      if (!sessionExist) {
+        throw AppException(const UnAuthorizedFailure());
+      }
+
+      emit(state.copyWith(status: AuthStatusEnum.authenticated));
+
+      await authRepository.validateSession();
+    } catch (e) {
+      if (e is AppException && e.failure is UnAuthorizedFailure) {
+        emit(
+          state.copyWith(status: AuthStatusEnum.unauthenticated, user: null),
+        );
+      }
+    }
   }
 
   FutureOr<void> _onRefreshToken(RefreshToken event, Emitter<AuthState> emit) {}

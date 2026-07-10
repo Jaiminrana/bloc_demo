@@ -18,7 +18,9 @@ final class RequestCancelledFailure extends NetworkFailure {}
 final class BadRequestFailure extends Failure {}
 
 // HTTP 401
-final class UnAuthorizedFailure extends Failure {}
+final class UnAuthorizedFailure extends Failure {
+  const UnAuthorizedFailure();
+}
 
 //HTTP 403
 final class ForbiddenFailure extends Failure {}

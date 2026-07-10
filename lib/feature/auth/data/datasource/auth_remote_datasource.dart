@@ -29,9 +29,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout() async {
-    await getCurrentUser();
-  }
+  Future<void> logout() async {}
 
   @override
   Future<RefreshResponseModel> refreshToken(String refreshToken) async {

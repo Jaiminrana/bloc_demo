@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:self/core/router/app_state_notifier.dart';
 import 'package:self/core/router/route_names.dart';
@@ -10,6 +10,8 @@ import 'package:self/feature/auth/presentation/auth_screen.dart';
 import 'package:self/feature/home/presentation/home_screen.dart';
 import 'package:self/feature/splash/bloc/splash_bloc.dart';
 import 'package:self/feature/splash/presentation/splash_screen.dart';
+import 'package:self/feature/user_profile/presentation/edit_user_profile_screen.dart';
+import 'package:self/feature/user_profile/presentation/user_profile_screen.dart';
 
 import 'app_routes.dart';
 
@@ -42,6 +44,16 @@ class AppRouter {
           path: AppRoutes.home,
           name: RouteNames.home,
           builder: (context, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.userProfile,
+          name: RouteNames.userProfile,
+          builder: (context, state) => const UserProfileScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.editUserProfile,
+          name: RouteNames.editUserProfile,
+          builder: (context, state) => const EditUserProfileScreen(),
         ),
       ],
     );

@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:self/core/errors/app_exception.dart';
+import 'package:self/core/errors/failures.dart';
 import 'package:self/core/errors/network_executor.dart';
 import 'package:self/feature/auth/data/datasource/auth_local_data_source.dart';
 import 'package:self/feature/auth/data/datasource/auth_remote_datasource.dart';
@@ -7,9 +11,11 @@ import 'package:self/feature/auth/data/models/user_model.dart';
 abstract interface class AuthRepository {
   Future<UserModel?> login(LoginRequestModel request);
 
-  Future<UserModel?> checkAuthStatus();
-
   Future<void> logout();
+
+  Future<bool> hasSession();
+
+  Future<void> validateSession();
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -33,32 +39,36 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<UserModel?> checkAuthStatus() async {
-    final refreshToken = await _localDataSource.getRefreshToken();
-
-    if (refreshToken == null || refreshToken.isEmpty) {
-      return null;
-    }
-
-    try {
-      final newToken = await _remoteDataSource.refreshToken(refreshToken);
-
-      await _localDataSource.saveAccessToken(newToken.accessToken);
-      await _localDataSource.saveRefreshToken(newToken.refreshToken);
-
-      final user = await _remoteDataSource.getCurrentUser();
-      return user;
-    } catch (_) {
-      _localDataSource.clearToken();
-      return null;
-    }
-  }
-
-  @override
   Future<void> logout() async {
     await NetworkExecutor.execute(() => _remoteDataSource.logout());
 
     //await _remoteDataSource.logout();
     //await _localDataSource.clearToken();
+  }
+
+  @override
+  Future<bool> hasSession() async {
+    final refreshToken = await _localDataSource.getRefreshToken();
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return false;
+    }
+    return true;
+  }
+
+  @override
+  Future<void> validateSession() async {
+    final refreshToken = await _localDataSource.getRefreshToken();
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      throw AppException(const UnAuthorizedFailure());
+    }
+
+    final newToken = await NetworkExecutor.execute(
+      () => _remoteDataSource.refreshToken(refreshToken),
+    );
+
+    await _localDataSource.saveAccessToken(newToken.accessToken);
+    await _localDataSource.saveRefreshToken(newToken.refreshToken);
   }
 }

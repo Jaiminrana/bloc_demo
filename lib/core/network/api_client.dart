@@ -9,6 +9,10 @@ class ApiClient {
     return _dio.post(path, data: data);
   }
 
+  Future<Response> put(String path, {Object? data}) {
+    return _dio.put(path, data: data);
+  }
+
   Future<Response> get(String path, {Options? options}) {
     return _dio.get(path, options: options);
   }
