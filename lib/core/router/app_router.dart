@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:self/app/app_shell.dart';
 import 'package:self/core/router/app_state_notifier.dart';
 import 'package:self/core/router/route_names.dart';
 import 'package:self/feature/auth/bloc/auth_bloc.dart';
@@ -35,25 +36,32 @@ class AppRouter {
           name: RouteNames.splash,
           builder: (context, state) => const SplashScreen(),
         ),
-        GoRoute(
-          path: AppRoutes.login,
-          name: RouteNames.login,
-          builder: (context, state) => const AuthScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.home,
-          name: RouteNames.home,
-          builder: (context, state) => const HomeScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.userProfile,
-          name: RouteNames.userProfile,
-          builder: (context, state) => const UserProfileScreen(),
-        ),
-        GoRoute(
-          path: AppRoutes.editUserProfile,
-          name: RouteNames.editUserProfile,
-          builder: (context, state) => const EditUserProfileScreen(),
+        ShellRoute(
+          builder: (context, state, child) {
+            return AppShell(child: child);
+          },
+          routes: [
+            GoRoute(
+              path: AppRoutes.login,
+              name: RouteNames.login,
+              builder: (context, state) => const AuthScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.home,
+              name: RouteNames.home,
+              builder: (context, state) => const HomeScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.userProfile,
+              name: RouteNames.userProfile,
+              builder: (context, state) => const UserProfileScreen(),
+            ),
+            GoRoute(
+              path: AppRoutes.editUserProfile,
+              name: RouteNames.editUserProfile,
+              builder: (context, state) => const EditUserProfileScreen(),
+            ),
+          ],
         ),
       ],
     );

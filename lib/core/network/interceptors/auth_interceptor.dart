@@ -17,6 +17,10 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
+    if (options.extra['skipAuth'] == true) {
+      return handler.next(options);
+    }
+
     final accessToken = await _localDataSource.getAccessToken();
 
     final path = options.path;

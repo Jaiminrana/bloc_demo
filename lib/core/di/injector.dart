@@ -1,6 +1,10 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:self/core/di/service_locator.dart';
 import 'package:self/core/network/api_client.dart';
+import 'package:self/core/network/connectivity/connectivity_service.dart';
+import 'package:self/core/network/connectivity/connectivity_service_impl.dart';
+import 'package:self/core/network/connectivity/cubit/connectivity_cubit.dart';
 import 'package:self/core/network/dio_factory.dart';
 import 'package:self/core/router/app_router.dart';
 import 'package:self/core/storage/secure_storage_service.dart';
@@ -28,6 +32,19 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<ApiClient>(() => ApiClient(getIt<Dio>()));
 
+  getIt.registerLazySingleton<ConnectivityService>(
+    () => ConnectivityServiceImpl(
+      dio: getIt<Dio>(),
+      connectivity: Connectivity(),
+    ),
+  );
+
+  getIt.registerLazySingleton(
+        () => ConnectivityCubit(
+      getIt<ConnectivityService>(),
+    ),
+  );
+
   getIt.registerLazySingleton<AuthBloc>(
     () => AuthBloc(getIt<AuthRepository>()),
   );
@@ -52,7 +69,9 @@ Future<void> configureDependencies() async {
   );
 
   getIt.registerLazySingleton<SplashBloc>(() => SplashBloc());
-  getIt.registerLazySingleton<UserProfileBloc>(() => UserProfileBloc(getIt<UserProfileRepository>()));
+  getIt.registerLazySingleton<UserProfileBloc>(
+    () => UserProfileBloc(getIt<UserProfileRepository>()),
+  );
 
   getIt.registerLazySingleton<AppRouter>(
     () => AppRouter(getIt<AuthBloc>(), getIt<SplashBloc>()),
