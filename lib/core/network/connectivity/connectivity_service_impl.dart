@@ -49,6 +49,7 @@ class ConnectivityServiceImpl implements ConnectivityService {
 
   void _listenForChanges() {
     _subscription = _connectivity.onConnectivityChanged.listen((_) async {
+      debugPrint("================>>> Connectivity changed");
       await _checkConnectivity();
     });
   }

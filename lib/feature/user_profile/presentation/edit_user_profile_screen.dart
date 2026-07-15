@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:self/core/errors/failure_message_mapper.dart';
 import 'package:self/feature/user_profile/bloc/user_profile_bloc.dart';
 import 'package:self/feature/user_profile/bloc/user_profile_event.dart';
 import 'package:self/feature/user_profile/bloc/user_profile_state.dart';
@@ -37,6 +38,12 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
             if (state.status == UserStatus.loaded) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('User details updated successfully')),
+              );
+            } else if (state.status == UserStatus.failure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(FailureMessageMapper.map(state.failure!)),
+                ),
               );
             }
           },

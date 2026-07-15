@@ -18,6 +18,27 @@ import 'package:self/feature/user_profile/data/data_source/user_profile_remote_d
 import 'package:self/feature/user_profile/data/repository/user_profile_repository.dart';
 
 Future<void> configureDependencies() async {
+  getIt.registerLazySingleton<Connectivity>((() => Connectivity()));
+
+  getIt.registerLazySingleton<Dio>(
+    instanceName: 'pingDio',
+    () => DioFactory.createPingDio(),
+  );
+
+  getIt.registerLazySingleton<ConnectivityService>(
+    () => ConnectivityServiceImpl(
+      dio: getIt<Dio>(instanceName: 'pingDio'),
+      connectivity: getIt<Connectivity>(),
+    ),
+  );
+
+  getIt.registerLazySingleton<Dio>(
+    () => DioFactory.createMainDio(
+      authLocalDataSource: getIt<AuthLocalDataSource>(),
+      connectivityService: getIt<ConnectivityService>(),
+    ),
+  );
+
   getIt.registerLazySingleton<SecureStorageService>(
     () => SecureStorageService(),
   );
@@ -26,23 +47,10 @@ Future<void> configureDependencies() async {
     () => AuthLocalDataSourceImpl(getIt<SecureStorageService>()),
   );
 
-  getIt.registerLazySingleton<Dio>(
-    () => DioFactory.create(getIt<AuthLocalDataSource>()),
-  );
-
   getIt.registerLazySingleton<ApiClient>(() => ApiClient(getIt<Dio>()));
 
-  getIt.registerLazySingleton<ConnectivityService>(
-    () => ConnectivityServiceImpl(
-      dio: getIt<Dio>(),
-      connectivity: Connectivity(),
-    ),
-  );
-
   getIt.registerLazySingleton(
-        () => ConnectivityCubit(
-      getIt<ConnectivityService>(),
-    ),
+    () => ConnectivityCubit(getIt<ConnectivityService>()),
   );
 
   getIt.registerLazySingleton<AuthBloc>(
